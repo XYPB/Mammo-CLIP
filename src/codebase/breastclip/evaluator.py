@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from scipy.special import softmax
 from sklearn import metrics
-from sklearn.metrics import auc, precision_recall_curve, accuracy_score
+from sklearn.metrics import auc, precision_recall_curve, accuracy_score, balanced_accuracy_score
 from sklearn.metrics import roc_auc_score
 from tqdm import tqdm
 
@@ -188,6 +188,8 @@ class Evaluator:
                 fpr, tpr, thresholds = metrics.roc_curve(emb["cancer"], similarities[:, 1])
                 auroc = metrics.auc(fpr, tpr)
                 results[label_text] = auroc
+            ba = balanced_accuracy_score(emb["cancer"], predictions)
+            print(f"Balanced accuracy: {ba}")
 
         print(test_dataset_name)
         print(results)
