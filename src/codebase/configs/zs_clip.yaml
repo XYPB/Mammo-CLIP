@@ -11,7 +11,7 @@ model:
   clip_check_point: ????
 
 base:
-  data_dir: "/restricted/projectnb/batmanlab/shared/Data"
+  data_dir: "./data"
   period: "n"
   fold: 0
   seed: 10
