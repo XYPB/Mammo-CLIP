@@ -78,9 +78,12 @@ class ImageClassificationZSDataset(Dataset):
         else:
             img = cv2.imread(str(img_path), cv2.IMREAD_GRAYSCALE)
 
+        print(self.transform)
+        print(img.shape)
         if self.transform:
             augmented = self.transform(image=img)
             img = augmented['image']
+        print(img.shape)
 
         img = img.astype('float32')
         img -= img.min()
