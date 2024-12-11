@@ -59,8 +59,12 @@ class ImageClassificationZSDataset(Dataset):
         study_id = str(self.df.iloc[idx]['patient_id'])
         image_id = self.df.iloc[idx]['image_id']
         img_path = str(self._get_img_path(study_id, image_id))
-        if not img_path.endswith(".png"):
-            img_path += ".png"
+        if self.dataset.lower() == 'rsna':
+            if not img_path.endswith(".jpg"):
+                img_path += "_resized.jpg"
+        else:
+            if not img_path.endswith(".png"):
+                img_path += ".png"
 
         if (
                 self.image_encoder_type == "swin" or
