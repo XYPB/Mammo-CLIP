@@ -1,7 +1,6 @@
 defaults:
   - _self_
   - data_test:
-      - vindr_zs
       - rsna_zs
 
   - dataloader: dataloader_4

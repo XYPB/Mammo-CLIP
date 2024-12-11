@@ -88,6 +88,7 @@ class ImageClassificationDataset(Dataset):
 
         label = torch.tensor(data[self.label_col], dtype=torch.long)
         label_name = self.text_label[label.item()] if self.text_label else "label"
+        print(label_name)
         return {
             'image': img,
             'label': label,

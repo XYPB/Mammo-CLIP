@@ -59,6 +59,10 @@ class DataModule:
             if data_config[dataset]["name"].lower() == "vindr":
                 train_df = df[df['split'] == "training"].reset_index(drop=True)
                 valid_df = df[df['split'] == "test"].reset_index(drop=True)
+            elif data_config[dataset]["name"].lower() == "rsna":
+                train_df = df
+                valid_df = pd.read_csv(Path(
+                    data_config[dataset]["data_dir"]) / data_config[dataset]["data_path"].replace("train.csv", "test.csv"), dtype=dtype_options)
             else:
                 train_df = df[df['fold'] != cur_fold].reset_index(drop=True)
                 valid_df = df[df['fold'] == cur_fold].reset_index(drop=True)
