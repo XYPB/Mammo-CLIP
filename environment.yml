@@ -208,4 +208,3 @@ dependencies:
     - transformers==4.41.1
     - tzdata==2024.1
     - werkzeug==3.0.3
-prefix: /ocean/projects/asc170022p/shg121/anaconda3/envs/Mammo-CLIP
