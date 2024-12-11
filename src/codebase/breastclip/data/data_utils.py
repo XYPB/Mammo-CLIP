@@ -6,6 +6,7 @@ from transformers import AutoTokenizer
 
 
 def load_tokenizer(source, pretrained_model_name_or_path, cache_dir, **kwargs):
+    print(cache_dir)
     if source == "huggingface":
         tokenizer = AutoTokenizer.from_pretrained(
             pretrained_model_name_or_path=pretrained_model_name_or_path,
