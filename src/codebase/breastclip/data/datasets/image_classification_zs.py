@@ -28,6 +28,7 @@ class ImageClassificationZSDataset(Dataset):
             image_encoder_type="swin",
             **kwargs
     ):
+        print("!!!!", transform_config)
         log.info(f"Loading Image classification dataset: [{split}]")
         self.df = df
         self.tokenizer = tokenizer

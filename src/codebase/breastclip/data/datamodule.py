@@ -39,6 +39,7 @@ class DataModule:
             "text_aug": str,
             "fold": int
         }
+        print("!!!!", transform_config)
 
         self.data_config = data_config
         self.dataloader_config = dataloader_config
