@@ -82,8 +82,7 @@ class ImageClassificationZSDataset(Dataset):
         print(img.shape)
         if self.transform:
             augmented = self.transform(img)
-            img = augmented
-        print(img)
+            img = np.array(augmented)
         print(img.shape)
 
         img = img.astype('float32')
