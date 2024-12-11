@@ -81,7 +81,7 @@ class ImageClassificationZSDataset(Dataset):
         print(self.transform)
         print(img.shape)
         if self.transform:
-            augmented = self.transform(image=img)
+            augmented = self.transform(img)
             img = augmented['image']
         print(img.shape)
 
