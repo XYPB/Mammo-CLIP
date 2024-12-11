@@ -2,6 +2,6 @@ rsna:
   name: "rsna"
   data_type: "image_classification_zs"
   data_dir: "${base.data_dir}"
-  img_dir: "data/rsna-breast-cancer-detection/RSNA_MAMMO_1080_JPG"
-  data_path: "data/rsna-breast-cancer-detection/rsna_mammo_train.csv"
+  img_dir: "rsna-breast-cancer-detection/RSNA_MAMMO_1080_JPG"
+  data_path: "rsna-breast-cancer-detection/rsna_mammo_train.csv"
   text_max_length: ${base.text_max_length}
