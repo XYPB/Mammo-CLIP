@@ -49,10 +49,7 @@ class OtsuCut(object):
         return img
 
     def __call__(self, image):
-        if isinstance(image, Iterable):
-            return [self.__process__(im) for im in image]
-        else:
-            return self.__process__(image)
+        return self.__process__(image)
 
 
 def load_tokenizer(source, pretrained_model_name_or_path, cache_dir, **kwargs):
