@@ -188,8 +188,9 @@ class Evaluator:
                 fpr, tpr, thresholds = metrics.roc_curve(emb["cancer"], similarities[:, 1])
                 auroc = metrics.auc(fpr, tpr)
                 results[label_text] = auroc
-            ba = balanced_accuracy_score(emb["cancer"], predictions)
-            print(f"Balanced accuracy: {ba}")
+                predictions = np.argmax(similarities, axis=1)
+                ba = balanced_accuracy_score(emb["cancer"], predictions)
+                print(f"Balanced accuracy: {ba}")
 
         print(test_dataset_name)
         print(results)
