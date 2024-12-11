@@ -48,7 +48,7 @@ class OtsuCut(object):
         img = Image.fromarray(x)
         return img
 
-    def __call__(self, x):
+    def __call__(self, image):
         if isinstance(x, Iterable):
             return [self.__process__(im) for im in x]
         else:
