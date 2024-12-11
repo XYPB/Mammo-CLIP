@@ -39,7 +39,7 @@ class Evaluator:
         self.datamodule = DataModule(
             data_config=self.config["data_test"],
             dataloader_config=self.config["dataloader"],
-            tokenizer_config=self.ckpt_config["tokenizer"] if "tokenizer" in self.ckpt_config else None,
+            tokenizer_config=self.config["tokenizer"] if "tokenizer" in self.config else None,
             transform_config=self.config["transform"] if "transform" in self.config else self.ckpt_config["transform"],
             mean=self.config["base"]["mean"],
             std=self.config["base"]["std"],
