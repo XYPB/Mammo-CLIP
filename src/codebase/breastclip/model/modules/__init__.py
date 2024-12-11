@@ -58,7 +58,7 @@ def load_image_encoder(config_image_encoder: Dict):
 
 def load_text_encoder(config_text_encoder: Dict, vocab_size: int):
     if config_text_encoder["source"].lower() == "huggingface":
-        cache_dir = config_text_encoder["cache_dir"]
+        cache_dir = "~/.cache/huggingface/hub"
         gradient_checkpointing = config_text_encoder["gradient_checkpointing"]
         _text_encoder = HuggingfaceTextEncoder(
             name=config_text_encoder["name"],
