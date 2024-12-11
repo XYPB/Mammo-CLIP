@@ -5,6 +5,8 @@ import cv2
 from PIL import Image
 
 from albumentations import *
+from torchvision.transforms import Compose as TorchCompose
+from torchvision.transforms import Resize as TorchResize
 from transformers import AutoTokenizer
 
 
@@ -114,8 +116,8 @@ def load_transform(split: str = "train", transform_config: Dict = None):
                 Resize(width=transforms["Resize"]["size_h"], height=transforms["Resize"]["size_w"])
             ])
         else:
-            return Compose([
+            return TorchCompose([
                 OtsuCut(),
-                Resize(width=transforms["Resize"]["size_h"], height=transforms["Resize"]["size_w"])
+                TorchResize(size=(transforms["Resize"]["size_h"], transforms["Resize"]["size_w"]))
             ])
 
