@@ -251,7 +251,7 @@ class EmbedPretrainingDataset(data.Dataset):
 
         self.transform = load_transform(split=split, transform_config=transform_config)
         self.imsize = imsize
-        self.split = split
+        self.split = "test"
         self.dataset = dataset
         self.text_max_length = text_max_length
         self.structural_cap = structural_cap
