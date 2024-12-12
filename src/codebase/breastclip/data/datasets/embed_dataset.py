@@ -332,7 +332,7 @@ class EmbedPretrainingDataset(data.Dataset):
             else:
                 raise ValueError(f"split {split} not supported")
             assert os.path.exists(density_file)
-            self.path2density = pickle.load(open(density_file, "rb"))
+            self.path2density_pre = pickle.load(open(density_file, "rb"))
 
         if self.balanced_test:
             if self.pred_density:
@@ -433,11 +433,11 @@ class EmbedPretrainingDataset(data.Dataset):
             if self.screen_only and int(birads) > 2:
                 continue
             
-            if p not in self.path2density.keys():
+            if p not in self.path2density_pre.keys():
                 print(f"### {p} not in density map")
                 continue
             # Ignore male images
-            density = self.path2density[p] - 1
+            density = self.path2density_pre[p] - 1
             if density == 4:
                 continue
             path2density[p] = density
