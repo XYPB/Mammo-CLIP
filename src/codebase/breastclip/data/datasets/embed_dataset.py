@@ -862,7 +862,7 @@ class EmbedPretrainingDataset(data.Dataset):
         imgs = np.array(imgs).astype(np.float32)
         # convert to grayscale if needed
         if len(imgs.shape) == 3:
-            imgs = imgs.mean(axis=0)
+            imgs = imgs.mean(axis=-1)
         imgs -= imgs.min()
         imgs /= imgs.max()
         imgs = torch.tensor((imgs - self.mean) / self.std, dtype=torch.float32)
