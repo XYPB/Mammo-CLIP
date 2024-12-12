@@ -182,8 +182,22 @@ class Evaluator:
                 results[label_text] = auroc
             elif label_text.lower() == "density":
                 predictions = np.argmax(similarities, axis=1)
-                accuracy = accuracy_score(emb["density"], predictions)
-                results[label_text] = accuracy
+                # accuracy = accuracy_score(emb["density"], predictions)
+                label = np.argmax(emb["density"], axis=-1)
+                accuracy = balanced_accuracy_score(label, predictions)
+                auc = 100 * roc_auc_score(
+                    label, similarities, multi_class="ovr"
+                )
+                results[label_text] = (accuracy, auc)
+            elif label_text.lower() == "birads":
+                predictions = np.argmax(similarities, axis=1)
+                # accuracy = accuracy_score(emb["density"], predictions)
+                label = np.argmax(emb["birads"], axis=-1)
+                accuracy = balanced_accuracy_score(label, predictions)
+                auc = 100 * roc_auc_score(
+                    label, similarities, multi_class="ovr"
+                )
+                results[label_text] = (accuracy, auc)
             elif label_text.lower() == "cancer" or label_text.lower() == "malignancy":
                 fpr, tpr, thresholds = metrics.roc_curve(emb["cancer"], similarities[:, 1])
                 auroc = metrics.auc(fpr, tpr)

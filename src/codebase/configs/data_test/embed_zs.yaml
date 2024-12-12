@@ -1,0 +1,7 @@
+rsna:
+  name: "embed"
+  data_type: "embed_pretraining"
+  data_dir: "${base.data_dir}"
+  img_dir: "EMBED_1080_JPG"
+  data_path: "Embed/tables/EMBED_OpenData_metadata_reduced_train.csv"
+  text_max_length: ${base.text_max_length}

@@ -4,6 +4,7 @@ from .image_classification_zs import ImageClassificationZSDataset
 from .imagetext import ImageTextDataset
 from .imagetext_contrastive import ImageTextDataset_contrastive
 from .imagetext_retrieval import ImageTextDataset_Retrieval
+from .embed_dataset import EmbedPretrainingDataset
 
 
 def load_dataset(data_type: str, loss_config=None, transform_config=None, **kwargs):
@@ -19,6 +20,8 @@ def load_dataset(data_type: str, loss_config=None, transform_config=None, **kwar
         dataset = ImageClassificationZSDataset(transform_config=transform_config, **kwargs)
     elif data_type.lower() == "image_aligner":
         dataset = ImageAligenerDataset(transform_config=transform_config, **kwargs)
+    elif data_type.lower() == "embed_pretraining":
+        dataset = EmbedPretrainingDataset(transform_config=transform_config, **kwargs)
     else:
         raise KeyError(f"Not supported data type: {data_type}")
     return dataset
