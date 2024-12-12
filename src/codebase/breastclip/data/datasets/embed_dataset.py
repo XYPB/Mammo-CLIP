@@ -438,8 +438,8 @@ class EmbedPretrainingDataset(data.Dataset):
             #     continue
             # Ignore male images
             density = self.path2density_pre[p] - 1
-            if density == 4:
-                continue
+            # if density == 4:
+            #     continue
             path2density[p] = density
 
             path2birads[p] = int(birads)
