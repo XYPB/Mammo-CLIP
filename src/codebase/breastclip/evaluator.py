@@ -75,6 +75,7 @@ class Evaluator:
         mass = []
         calc = []
         density = []
+        birads = []
         cancer = []
         for batch in tqdm(dataloader):
             if (
@@ -104,6 +105,8 @@ class Evaluator:
                 calc.extend(batch["calc"].numpy())
             if "density" in batch:
                 density.extend(batch["density"].numpy())
+            if "birads" in batch:
+                birads.extend(batch["birads"].numpy())
             if "cancer" in batch:
                 cancer.extend(batch["cancer"].numpy())
 
@@ -120,6 +123,7 @@ class Evaluator:
             "mass": mass,
             "calc": calc,
             "density": density,
+            "birads": birads,
             "cancer": cancer
         }
 
