@@ -236,7 +236,7 @@ class EmbedPretrainingDataset(data.Dataset):
         structural_cap=True,
         natural_cap=False,
         balanced_test=True,
-        pred_density=True,
+        pred_density=False,
         ten_pct=True,
         large_density=False,
         instance_test_cap=False,
@@ -433,9 +433,9 @@ class EmbedPretrainingDataset(data.Dataset):
             if self.screen_only and int(birads) > 2:
                 continue
             
-            if p not in self.path2density_pre.keys():
-                print(f"### {p} not in density map")
-                continue
+            # if p not in self.path2density_pre.keys():
+            #     print(f"### {p} not in density map")
+            #     continue
             # Ignore male images
             density = self.path2density_pre[p] - 1
             if density == 4:
