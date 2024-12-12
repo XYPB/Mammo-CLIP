@@ -224,6 +224,7 @@ class EmbedPretrainingDataset(data.Dataset):
         self,
         tokenizer,
         split="train",
+        dataset="embed",
         transform_config=None,
         data_pct=1.0,
         imsize=1024,
@@ -251,6 +252,7 @@ class EmbedPretrainingDataset(data.Dataset):
         self.transform = load_transform(split=split, transform_config=transform_config)
         self.imsize = imsize
         self.split = split
+        self.dataset = dataset
         self.text_max_length = text_max_length
         self.structural_cap = structural_cap
         self.simple_cap = simple_cap
