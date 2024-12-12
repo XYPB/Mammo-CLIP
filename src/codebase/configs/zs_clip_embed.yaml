@@ -43,14 +43,6 @@ base:
         - "fatty-glandular"
         - "dense-glandular"
         - "dense"
-      birads:
-        - "birads 0"
-        - "birads 1"
-        - "birads 2"
-        - "birads 3"
-        - "birads 4"
-        - "birads 5"
-        - "birads 6"
 
 hydra:
   run:

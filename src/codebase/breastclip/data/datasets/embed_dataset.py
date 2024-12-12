@@ -236,7 +236,7 @@ class EmbedPretrainingDataset(data.Dataset):
         structural_cap=True,
         natural_cap=False,
         balanced_test=True,
-        pred_density=False,
+        pred_density=True,
         ten_pct=True,
         large_density=False,
         instance_test_cap=False,
@@ -322,17 +322,16 @@ class EmbedPretrainingDataset(data.Dataset):
             self.df = self.df.sample(frac=data_pct, random_state=42)
         self.df.reset_index(drop=True, inplace=True)
 
-        if self.pred_density:
-            if split == "train":
-                density_file = EMBED_TRAIN_PATH2DENSITY
-            elif split == "valid":
-                density_file = EMBED_VALID_PATH2DENSITY
-            elif split == "test":
-                density_file = EMBED_TEST_PATH2DENSITY
-            else:
-                raise ValueError(f"split {split} not supported")
-            assert os.path.exists(density_file)
-            self.path2density_pre = pickle.load(open(density_file, "rb"))
+        if split == "train":
+            density_file = EMBED_TRAIN_PATH2DENSITY
+        elif split == "valid":
+            density_file = EMBED_VALID_PATH2DENSITY
+        elif split == "test":
+            density_file = EMBED_TEST_PATH2DENSITY
+        else:
+            raise ValueError(f"split {split} not supported")
+        assert os.path.exists(density_file)
+        self.path2density_pre = pickle.load(open(density_file, "rb"))
 
         if self.balanced_test:
             if self.pred_density:
