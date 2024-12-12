@@ -1,4 +1,4 @@
-rsna:
+embed:
   name: "embed"
   data_type: "embed_pretraining"
   data_dir: "${base.data_dir}"
