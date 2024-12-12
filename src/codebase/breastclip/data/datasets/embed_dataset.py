@@ -378,7 +378,7 @@ class EmbedPretrainingDataset(data.Dataset):
         self.filenames, self.path2sent, self.path2birads, self.path2density = self.load_text_data(split)
 
     def load_text_data(self, split):
-        base_filename = f"{split}_mgca_captions.pickle"
+        base_filename = f"{split}_mammo_clip_captions.pickle"
         if self.structural_cap:
             base_filename = base_filename.replace(".pickle", "_structural.pickle")
         elif self.simple_cap:
