@@ -39,13 +39,13 @@ base:
           - "malignancy"
     embed:
       birads:
-        - "BI-RADS 0"
-        - "BI-RADS 1"
-        - "BI-RADS 2"
-        - "BI-RADS 3"
-        - "BI-RADS 4"
-        - "BI-RADS 5"
-        - "BI-RADS 6"
+        - "BI-RADS 0: additional imaging required"
+        - "BI-RADS 1: negative and healthy"
+        - "BI-RADS 2: benign finding"
+        - "BI-RADS 3: probably benign finding"
+        - "BI-RADS 4: suspicious abnormality"
+        - "BI-RADS 5: highly suggestive of malignancy"
+        - "BI-RADS 6: known biopsy-proven malignancy"
 
 hydra:
   run:
