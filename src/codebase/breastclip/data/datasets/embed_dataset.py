@@ -860,9 +860,6 @@ class EmbedPretrainingDataset(data.Dataset):
                 key = aligned_key
         imgs = get_imgs(key, self.imsize, self.transform)
         imgs = np.array(imgs).astype(np.float32)
-        # convert to grayscale if needed
-        if len(imgs.shape) == 3:
-            imgs = imgs.mean(axis=-1)
         imgs -= imgs.min()
         imgs /= imgs.max()
         imgs = torch.tensor((imgs - self.mean) / self.std, dtype=torch.float32)
