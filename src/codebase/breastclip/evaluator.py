@@ -76,6 +76,7 @@ class Evaluator:
         calc = []
         density = []
         cancer = []
+        print(len(dataloader))
         for batch in tqdm(dataloader):
             if (
                     self.clip_image_encoder == "swin" or
