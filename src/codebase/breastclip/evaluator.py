@@ -84,7 +84,6 @@ class Evaluator:
                     self.clip_image_encoder == "tf_efficientnet_b5_ns-detect" or
                     self.clip_image_encoder == "tf_efficientnetv2-detect"
             ):
-                print(batch["images"].shape)
                 batch["images"] = batch["images"].squeeze(1).permute(0, 3, 1, 2)
 
             idx += 1

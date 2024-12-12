@@ -375,7 +375,7 @@ class EmbedPretrainingDataset(data.Dataset):
 
         self.tokenizer = tokenizer
 
-        self.filenames, self.path2sent, self.path2label = self.load_text_data(split)
+        self.filenames, self.path2sent, self.path2birads, self.path2density = self.load_text_data(split)
 
     def load_text_data(self, split):
         base_filename = f"{split}_mgca_captions.pickle"
@@ -402,7 +402,8 @@ class EmbedPretrainingDataset(data.Dataset):
 
         # Some of the paths in the dataframe are not in the captions
         filenames = []
-        path2label = {}
+        path2birads = {}
+        path2density = {}
 
         print("### extract label from captions...")
         for p, sentences in tqdm(path2sent.items()):
@@ -431,21 +432,21 @@ class EmbedPretrainingDataset(data.Dataset):
             # skip birads 3 - 6 considering only screening image with 0, 1, 2
             if self.screen_only and int(birads) > 2:
                 continue
-            if self.pred_density:
-                if p not in self.path2density.keys():
-                    print(f"### {p} not in density map")
-                    continue
-                # Ignore male images
-                label = self.path2density[p] - 1
-                if label == 4:
-                    continue
-                path2label[p] = label
-                filenames.append(p)
-            else:
-                path2label[p] = int(birads)
-                filenames.append(p)
-        print(np.unique(list(path2label.values()), return_counts=True))
-        return filenames, path2sent, path2label
+            
+            if p not in self.path2density.keys():
+                print(f"### {p} not in density map")
+                continue
+            # Ignore male images
+            density = self.path2density[p] - 1
+            if density == 4:
+                continue
+            path2density[p] = density
+
+            path2birads[p] = int(birads)
+            filenames.append(p)
+        print(np.unique(list(path2birads.values()), return_counts=True))
+        print(np.unique(list(path2density.values()), return_counts=True))
+        return filenames, path2sent, path2birads, path2density
 
     def _create_captions_(self, row, meta_only=False):
         target_side = row[EMBED_SIDE_COL]
@@ -838,14 +839,14 @@ class EmbedPretrainingDataset(data.Dataset):
     def get_birads_one_hot_label(self, index, get_full=False):
         multi_hot_label = torch.zeros(len(EMBED_LETTER_TO_BIRADS))
         key = self.filenames[index]
-        asses = self.path2label[key]
+        asses = self.path2birads[key]
         multi_hot_label[asses] = 1
         return multi_hot_label
 
     def get_density_one_hot_label(self, index, get_full=False):
         multi_hot_label = torch.zeros(len(EMBED_DENSITY_DESC) - 1)
         key = self.filenames[index]
-        density = self.path2label[key]
+        density = self.path2density[key]
         multi_hot_label[density] = 1
         return multi_hot_label
 
