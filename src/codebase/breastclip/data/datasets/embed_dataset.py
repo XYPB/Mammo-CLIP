@@ -240,7 +240,7 @@ class EmbedPretrainingDataset(data.Dataset):
         ten_pct=True,
         large_density=False,
         instance_test_cap=False,
-        screen_only=False, 
+        screen_only=True, 
         aligned_mlo=False,
         zero_shot=False,
         **kwargs,
@@ -841,7 +841,8 @@ class EmbedPretrainingDataset(data.Dataset):
         return tokens, x_len
 
     def get_birads_one_hot_label(self, index, get_full=False):
-        multi_hot_label = torch.zeros(len(EMBED_LETTER_TO_BIRADS))
+        num_classes = 3 if self.screen_only else len(EMBED_LETTER_TO_BIRADS)
+        multi_hot_label = torch.zeros(num_classes)
         key = self.filenames[index]
         asses = self.path2birads[key]
         multi_hot_label[asses] = 1
