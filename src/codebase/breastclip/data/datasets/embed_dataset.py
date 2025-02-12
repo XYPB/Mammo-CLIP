@@ -314,6 +314,9 @@ class EmbedPretrainingDataset(data.Dataset):
         if screen_only:
             screen_idx = self.df[EMBED_PROCEDURE_COL].apply(lambda x: x.lower().find('screen') > 0)
             self.df = self.df[screen_idx]
+            # Clean up the magnification view and none CC/MLO view
+            self.df = self.df[self.df['spot_mag'] != 0]
+            self.df = self.df[self.df[EMBED_VIEW_COL].isin(['CC', 'MLO'])]
 
         if self.structural_cap or self.natural_cap:
             self.text_max_length = 144
