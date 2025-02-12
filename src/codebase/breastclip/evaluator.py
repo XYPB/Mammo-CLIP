@@ -197,7 +197,7 @@ class Evaluator:
                 predictions = np.argmax(similarities, axis=1)
                 # accuracy = accuracy_score(emb["density"], predictions)
                 label = np.argmax(emb["birads"], axis=-1)
-                accuracy = balanced_accuracy_score(label, predictions)
+                accuracy = 100 * balanced_accuracy_score(label, predictions)
                 auc = 100 * roc_auc_score(
                     label, similarities, multi_class="ovr"
                 )
