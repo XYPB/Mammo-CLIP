@@ -874,4 +874,5 @@ class EmbedPretrainingDataset(data.Dataset):
             "images": imgs,
             "density": self.get_density_one_hot_label(index),
             "birads": self.get_birads_one_hot_label(index),
+            "path": key,
         }

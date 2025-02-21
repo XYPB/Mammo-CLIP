@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Dict, List, Union
 
 import numpy as np
@@ -77,6 +78,7 @@ class Evaluator:
         density = []
         birads = []
         cancer = []
+        paths = []
         for batch in tqdm(dataloader):
             if (
                     self.clip_image_encoder == "swin" or
@@ -109,6 +111,8 @@ class Evaluator:
                 birads.extend(batch["birads"].numpy())
             if "cancer" in batch:
                 cancer.extend(batch["cancer"].numpy())
+            if "paths" in batch:
+                paths.extend(batch["paths"])
 
         image_embeddings = np.concatenate(image_embeddings, axis=0)
         if len(text_embeddings) > 0:
@@ -124,7 +128,8 @@ class Evaluator:
             "calc": calc,
             "density": density,
             "birads": birads,
-            "cancer": cancer
+            "cancer": cancer,
+            "paths": paths
         }
 
     def encode_image(self, image: torch.Tensor):
@@ -193,6 +198,15 @@ class Evaluator:
                     label, similarities, multi_class="ovr"
                 )
                 results[label_text] = (accuracy, auc)
+                
+                save_dir = os.path.join(save_path, "predictions_density")
+                os.makedirs(save_dir, exist_ok=True)
+                np.save(os.path.join(save_dir, "labels.npy"), label)
+                np.save(os.path.join(save_dir, "scores.npy"), similarities)
+                path_dest = os.path.join(save_dir, "path.pickle")
+                with open(path_dest, "wb") as fp:
+                    import pickle
+                    pickle.dump(emb['paths'], fp)
             elif label_text.lower() == "birads":
                 predictions = np.argmax(similarities, axis=1)
                 # accuracy = accuracy_score(emb["density"], predictions)
@@ -202,6 +216,15 @@ class Evaluator:
                     label, similarities, multi_class="ovr"
                 )
                 results[label_text] = (accuracy, auc)
+                
+                save_dir = os.path.join(save_path, "predictions")
+                os.makedirs(save_dir, exist_ok=True)
+                np.save(os.path.join(save_dir, "labels.npy"), label)
+                np.save(os.path.join(save_dir, "scores.npy"), similarities)
+                path_dest = os.path.join(save_dir, "path.pickle")
+                with open(path_dest, "wb") as fp:
+                    import pickle
+                    pickle.dump(emb['paths'], fp)
             elif label_text.lower() == "cancer" or label_text.lower() == "malignancy":
                 fpr, tpr, thresholds = metrics.roc_curve(emb["cancer"], similarities[:, 1])
                 auroc = metrics.auc(fpr, tpr)
@@ -209,6 +232,7 @@ class Evaluator:
                 predictions = np.argmax(similarities, axis=1)
                 ba = balanced_accuracy_score(emb["cancer"], predictions)
                 print(f"Balanced accuracy: {ba}")
+                
 
         print(test_dataset_name)
         print(results)
