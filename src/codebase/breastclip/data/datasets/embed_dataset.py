@@ -245,7 +245,7 @@ class EmbedPretrainingDataset(data.Dataset):
         screen_only=True, 
         aligned_mlo=False,
         zero_shot=False,
-        paired_test=False,
+        paired_test=True,
         **kwargs,
     ):
         super().__init__()
