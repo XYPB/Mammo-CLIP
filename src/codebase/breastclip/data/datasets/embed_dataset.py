@@ -104,6 +104,8 @@ EMBED_TEST_PATH2DENSITY = EMBED_DATA_DIR + "/test_path2density.pickle"
 EMBED_TRAIN_ROI_DET_PATH2LABEL = EMBED_DATA_DIR + "/roi2d_path2label_roi_train_resized.pickle"
 EMBED_VALID_ROI_DET_PATH2LABEL = EMBED_DATA_DIR + "/roi2d_path2label_roi_valid_resized.pickle"
 EMBED_TEST_ROI_DET_PATH2LABEL = EMBED_DATA_DIR + "/roi2d_path2label_roi_test_resized.pickle"
+EMBED_10PCT_PAIRED_TEST_PATH = EMBED_DATA_DIR + "/test_matched_10pct_path2label.pickle"
+EMBED_10PCT_PAIRED_DEN_TEST_PATH = EMBED_DATA_DIR + "/test_matched_10pct_path2density.pickle"
 
 EMBED_IMAGE_TYPE_COL = "FinalImageType"
 EMBED_PATH_COL = "anon_dicom_path"
@@ -243,6 +245,7 @@ class EmbedPretrainingDataset(data.Dataset):
         screen_only=True, 
         aligned_mlo=False,
         zero_shot=False,
+        paired_test=False,
         **kwargs,
     ):
         super().__init__()
@@ -340,12 +343,14 @@ class EmbedPretrainingDataset(data.Dataset):
         if self.balanced_test:
             if self.pred_density:
                 if ten_pct:
-                    assert os.path.exists(EMBED_10PCT_DEN_TEST_PATH)
-                    print("### Using balanced test set with 10% test examples...")
+                    if paired_test:
+                        df_path = EMBED_10PCT_PAIRED_DEN_TEST_PATH
+                    else:
+                        df_path = EMBED_10PCT_DEN_TEST_PATH
+                    assert os.path.exists(df_path)
+                    print('### Using balanced test set with 10% test examples...')
                     # Note this also contains the density label
-                    self.balanced_test_path = pickle.load(
-                        open(EMBED_10PCT_DEN_TEST_PATH, "rb")
-                    )
+                    self.balanced_test_path = pickle.load(open(df_path, "rb"))
                 elif large_density:
                     assert os.path.exists(EMBED_BALANCED_LARGE_DEN_TEST_PATH)
                     print("### Using balanced test set with 4x2500 examples...")
@@ -362,11 +367,13 @@ class EmbedPretrainingDataset(data.Dataset):
                     )
             else:
                 if ten_pct:
-                    assert os.path.exists(EMBED_10PCT_TEST_PATH)
-                    print("### Using balanced test set with 10% test examples...")
-                    self.balanced_test_path = pickle.load(
-                        open(EMBED_10PCT_TEST_PATH, "rb")
-                    )
+                    if paired_test:
+                        df_path = EMBED_10PCT_PAIRED_TEST_PATH
+                    else:
+                        df_path = EMBED_10PCT_TEST_PATH
+                    assert os.path.exists(df_path)
+                    print('### Using balanced test set with 10% test examples...')
+                    self.balanced_test_path = pickle.load(open(df_path, "rb"))
                 else:
                     assert os.path.exists(EMBED_BALANCED_TEST_PATH)
                     print("### Using balanced test set with 7x200 examples...")
