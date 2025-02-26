@@ -1107,7 +1107,6 @@ class VinDr(torch.utils.data.Dataset):
         
         img_path = dicom_path.replace('vindr-1.0.0', 'vindr-1.0.0-resized-1024')
         img_path = img_path.replace('.dicom', '_resized.png')
-        print(self.transform)
         img = get_imgs(img_path, scale=self.imsize, transform=self.transform)
         imgs = np.array(imgs).astype(np.float32)
         imgs -= imgs.min()
