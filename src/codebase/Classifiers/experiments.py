@@ -133,7 +133,7 @@ def train_loop(args, device):
         scaler = torch.cuda.amp.GradScaler()
 
     model = model.to(device)
-    print(model)
+    # print(model)
 
     logger = SummaryWriter(args.tb_logs_path / f'fold{args.cur_fold}')
 
