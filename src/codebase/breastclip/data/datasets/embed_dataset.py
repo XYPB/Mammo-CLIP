@@ -950,7 +950,7 @@ class VinDr(torch.utils.data.Dataset):
         self.mean = mean
         self.std = std
         self.n_classes = 5 if not self.pred_density else 4
-        if split == 'test':
+        if split == 'test' or split == 'valid':
             self.df = self.df[self.df['split'] == 'test']
         else:
             self.df = self.df[self.df['split'] == 'training']
