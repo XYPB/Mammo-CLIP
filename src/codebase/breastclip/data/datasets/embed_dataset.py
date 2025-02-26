@@ -909,6 +909,7 @@ class VinDr(torch.utils.data.Dataset):
 
     def __init__(self, 
                  split='train', 
+                 dataset='vindr',
                  transform=None, 
                  imsize=1024,
                  data_pct=1.0,
@@ -925,7 +926,7 @@ class VinDr(torch.utils.data.Dataset):
                  load_jpg=False,
                  *args, **kwargs):
         super().__init__()
-        self.dataset = 'vindr'
+        self.dataset = dataset
         self.df = pd.read_csv(VINDR_CSV_DIR)
         self.data_path = VINDR_IMAGE_DIR
         self.transform = transform
