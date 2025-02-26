@@ -294,7 +294,7 @@ class EmbedPretrainingDataset(data.Dataset):
         if split == "train":
             self.df = pd.read_csv(EMBED_TRAIN_META_CSV)
         elif split == "valid":
-            self.df = pd.read_csv(EMBED_VALID_META_CSV)
+            self.df = pd.read_csv(EMBED_TEST_META_CSV)
         elif split == "test":
             self.df = pd.read_csv(EMBED_TEST_META_CSV)
             self.cls_prompt = True
@@ -352,7 +352,7 @@ class EmbedPretrainingDataset(data.Dataset):
         if split == "train":
             density_file = EMBED_TRAIN_PATH2DENSITY
         elif split == "valid":
-            density_file = EMBED_VALID_PATH2DENSITY
+            density_file = EMBED_TEST_PATH2DENSITY
         elif split == "test":
             density_file = EMBED_TEST_PATH2DENSITY
         else:
