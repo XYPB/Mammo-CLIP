@@ -964,7 +964,7 @@ class VinDr(torch.utils.data.Dataset):
         for idx in self.train_idx:
             entry = self.df.iloc[idx]
             den_label = entry['breast_density'].split(' ')[-1]
-            den_label = VINDR_DENSITY_LETTER2DIGIT[label]
+            den_label = VINDR_DENSITY_LETTER2DIGIT[den_label]
             # BIRADS 1 ~ 5
             birads_label = int(entry['breast_birads'].split(' ')[-1])
             if self.pred_mass or self.pred_calc:
