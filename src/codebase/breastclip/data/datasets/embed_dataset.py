@@ -924,6 +924,8 @@ class VinDr(torch.utils.data.Dataset):
                  simple_cap=False,
                  raw_caption=False,
                  load_jpg=False,
+                 mean=0,
+                 std=0,
                  *args, **kwargs):
         super().__init__()
         self.dataset = dataset
@@ -945,6 +947,8 @@ class VinDr(torch.utils.data.Dataset):
         self.zero_shot_caps = None
         self.zero_shot_caps_len = None
         self.load_jpg = load_jpg
+        self.mean = mean
+        self.std = std
         self.n_classes = 5 if not self.pred_density else 4
         if split == 'test':
             self.df = self.df[self.df['split'] == 'test']
