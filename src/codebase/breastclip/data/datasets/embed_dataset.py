@@ -1108,11 +1108,11 @@ class VinDr(torch.utils.data.Dataset):
         img_path = dicom_path.replace('vindr-1.0.0', 'vindr-1.0.0-resized-1024')
         img_path = img_path.replace('.dicom', '_resized.png')
         img = get_imgs(img_path, scale=self.imsize, transform=self.transform)
-        imgs = np.array(imgs).astype(np.float32)
-        imgs -= imgs.min()
-        imgs /= imgs.max()
-        imgs = torch.tensor((imgs - self.mean) / self.std, dtype=torch.float32)
-        imgs = imgs.unsqueeze(0)
+        img = np.array(img).astype(np.float32)
+        img -= img.min()
+        img /= img.max()
+        img = torch.tensor((img - self.mean) / self.std, dtype=torch.float32)
+        img = img.unsqueeze(0)
         one_hot_labels = torch.zeros(self.n_classes)
         one_hot_labels[label] = 1
         # if self.zero_shot_caps is None:
