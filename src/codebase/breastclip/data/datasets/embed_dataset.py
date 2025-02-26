@@ -910,7 +910,7 @@ class VinDr(torch.utils.data.Dataset):
     def __init__(self, 
                  split='train', 
                  dataset='vindr',
-                 transform=None, 
+                 transform_config=None, 
                  imsize=1024,
                  data_pct=1.0,
                  llm_type='gpt',
@@ -929,7 +929,7 @@ class VinDr(torch.utils.data.Dataset):
         self.dataset = dataset
         self.df = pd.read_csv(VINDR_CSV_DIR)
         self.data_path = VINDR_IMAGE_DIR
-        self.transform = transform
+        self.transform = self.transform = load_transform(split=split, transform_config=transform_config)
         self.imsize = imsize
         self.uniform_norm = uniform_norm
         self.pred_density = pred_density
