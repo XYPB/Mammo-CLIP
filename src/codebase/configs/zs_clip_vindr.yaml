@@ -1,0 +1,67 @@
+defaults:
+  - _self_
+  - data_test:
+      - vindr_zs
+
+  - dataloader: dataloader_4
+  - transform: clahe
+  - tokenizer: clinical_bert
+
+model:
+  clip_check_point: ????
+
+base:
+  data_dir: "./data"
+  period: "n"
+  fold: 0
+  seed: 10
+  amp: True
+  mean: 0.3089279
+  std: 0.25053555408335154
+  image_size_h: 1520
+  image_size_w: 912
+  text_max_length: 256
+  loss_best: classification
+  data_frac: 1.0
+  output:
+    save_path: ${hydra:run.dir}/zero_shot_results/
+  zs_prompts:
+    vindr:
+      birads:
+        - "BI-RADS 1: negative and healthy"
+        - "BI-RADS 2: benign finding"
+        - "BI-RADS Category 3: probably benign finding"
+        - "BI-RADS Category 4: suspicious abnormality"
+        - "BI-RADS Category 5: highly suggestive of malignancy"
+      density:
+        - "almost entirely fat"
+        - "scattered fibroglandular densities"
+        - "heterogeneously dense"
+        - "extremely dense"
+
+    rsna:
+      malignancy:
+          - "no malignancy"
+          - "malignancy"
+
+hydra:
+  run:
+    dir: ????
+  job_logging:
+    version: 1
+    formatters:
+      simple:
+        format: "%(message)s"
+    handlers:
+      console:
+        class: logging.StreamHandler
+        formatter: simple
+        stream: ext://sys.stdout
+      file:
+        class: logging.FileHandler
+        filename: ${hydra.run.dir}/evaluate.log
+        formatter: simple
+    root:
+      level: INFO
+      handlers: [ file, console ]
+    disable_existing_loggers: false

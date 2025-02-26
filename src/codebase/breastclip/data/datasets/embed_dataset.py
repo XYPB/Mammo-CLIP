@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.utils.data as data
+from collections import Counter
 from nltk.tokenize import RegexpTokenizer
 from breastclip.data.data_utils import load_transform
 from PIL import Image
@@ -208,6 +209,25 @@ EMBED_BIRADS_DESC = {
 }
 GET_JPEG_PATH_FUNC = lambda x: x.replace('Embed', 'EMBED_1080_JPG').replace(".dcm", "_resized.jpg")
 GET_ALIGNED_MLO_FUNC = lambda x: x.replace(".jpg", "_align_to_cc.jpg")
+
+# #############################################
+# VinDr constants
+# #############################################
+
+VINDR_DATA_PATH = DATA_BASE_DIR + "/vindr-1.0.0"
+VINDR_IMAGE_DIR = VINDR_DATA_PATH + "/images"
+VINDR_CSV_DIR = VINDR_DATA_PATH + "/breast-level_annotations.csv"
+VINDR_DET_CSV_DIR = VINDR_DATA_PATH + "/finding_annotations.csv"
+VINDR_DENSITY_LETTER2DIGIT = {
+    'A': 1,
+    'B': 2,
+    'C': 3,
+    'D': 4
+}
+VIN_DR_DENSITY_WEIGHT = [0.9124643059323552, 0.04777300031059451, 0.005967719463259354, 0.03379497429379093]
+VIN_DR_BIRADS_WEIGHT = [0.010478014208492025, 0.030028387058222465, 0.15102987146756514, 0.1842069251997844, 0.6242568020659359]
+VIN_DR_MASS_WEIGHT = 16.17861187510112
+VIN_DR_CALC_WEIGHT = 37.38317757009346
 
 def check_element_type(element, str_pool=None):
     if str_pool is None:
@@ -882,4 +902,223 @@ class EmbedPretrainingDataset(data.Dataset):
             "density": self.get_density_one_hot_label(index),
             "birads": self.get_birads_one_hot_label(index),
             "paths": key,
+        }
+
+
+class VinDr(torch.utils.data.Dataset):
+
+    def __init__(self, 
+                 split='train', 
+                 transform=None, 
+                 imsize=1024,
+                 data_pct=1.0,
+                 llm_type='gpt',
+                 pred_density=False,
+                 pred_mass=False,
+                 pred_calc=False,
+                 uniform_norm=False,
+                 max_words=64,
+                 structural_cap=False,
+                 natural_cap=False,
+                 simple_cap=False,
+                 raw_caption=False,
+                 load_jpg=False,
+                 *args, **kwargs):
+        super().__init__()
+        self.df = pd.read_csv(VINDR_CSV_DIR)
+        self.data_path = VINDR_IMAGE_DIR
+        self.transform = transform
+        self.imsize = imsize
+        self.uniform_norm = uniform_norm
+        self.pred_density = pred_density
+        self.pred_mass = pred_mass
+        self.pred_calc = pred_calc
+        self.llm_type = llm_type
+        self.tokenizer = None
+        self.max_words = max_words
+        self.structural_cap = structural_cap
+        self.natural_cap = natural_cap
+        self.simple_cap = simple_cap
+        self.raw_caption = raw_caption
+        self.zero_shot_caps = None
+        self.zero_shot_caps_len = None
+        self.load_jpg = load_jpg
+        self.n_classes = 5 if not self.pred_density else 4
+        if split == 'test':
+            self.df = self.df[self.df['split'] == 'test']
+        else:
+            self.df = self.df[self.df['split'] == 'training']
+        self.findings_df = pd.read_csv(VINDR_DET_CSV_DIR)
+
+        if data_pct != 1.0 and split == "train":
+            import random
+            random.seed(42)
+            self.df = self.df.sample(frac=data_pct)
+
+        self.train_idx = list(range(len(self.df)))
+        self.filenames = []
+        self.labels = []
+        self.birads = []
+        self.densities = []
+        self.path2label = {}
+        for idx in self.train_idx:
+            entry = self.df.iloc[idx]
+            den_label = entry['breast_density'].split(' ')[-1]
+            den_label = VINDR_DENSITY_LETTER2DIGIT[label]
+            # BIRADS 1 ~ 5
+            birads_label = int(entry['breast_birads'].split(' ')[-1])
+            if self.pred_mass or self.pred_calc:
+                image_id = entry['image_id']
+                findings = self.findings_df[self.findings_df['image_id'] == image_id]['finding_categories']
+                findings_list = findings.to_list()
+                findings_str = ' '.join(findings_list)
+                if self.pred_mass:
+                    label = 2 if 'Mass' in findings_str else 1
+                else:
+                    label = 2 if 'Suspicious Calcification' in findings_str else 1
+            elif self.pred_density:
+                label = den_label
+            else:
+                label = birads_label
+            sid = entry['study_id']
+            imid = entry['image_id']
+            dicom_path = os.path.join(self.data_path, f'{sid}/{imid}.dicom')
+            self.filenames.append(dicom_path)
+            self.labels.append(label - 1)
+            self.densities.append(den_label - 1)
+            self.birads.append(birads_label - 1)
+            self.path2label[dicom_path] = label - 1
+        print('### Sampled split distribution: ', Counter(self.labels))
+
+    def __len__(self):
+        return len(self.df)
+    
+    def get_caption(self, series_sents):
+        if len(series_sents) == 0:
+            raise Exception("no sentence for path")
+
+        # separate different sentences
+        series_sents = list(filter(lambda x: x != "", series_sents))
+        sent = " ".join(series_sents)
+
+        tokens = self.tokenizer(
+            sent,
+            return_tensors="pt",
+            truncation=True,
+            padding="max_length",
+            max_length=self.max_words,
+        )
+        x_len = len([t for t in tokens["input_ids"][0] if t != 0])
+        tokens['masked_ids'] = tokens['input_ids']
+
+        return tokens, x_len
+    
+    def get_zeroshot_caption(self):
+        base_captions = ''
+        zero_shot_caps = []
+        zero_shot_caps_len = []
+        if self.pred_density:
+            for density, density_desc in EMBED_DENSITY_DESC.items():
+                if density == 5:
+                    continue
+                if self.structural_cap:
+                    density_desc = EMBED_DENSITY_DESC[density]
+                    captions = base_captions + EMBED_DENSITY + EMBED_BREAST_COMPOSITION_CAPTION.replace("{{DENSITY}}",density_desc)
+                    if density in EMBED_DENSITY_EXTRA_CAPTION.keys():
+                        captions += EMBED_DENSITY_EXTRA_CAPTION[density]
+                elif self.natural_cap:
+                    density_desc = EMBED_DENSITY_DESC[density]
+                    captions = base_captions + EMBED_BREAST_COMPOSITION_CAPTION.replace("{{DENSITY}}",density_desc)
+                    if density in EMBED_DENSITY_EXTRA_CAPTION.keys():
+                        captions += EMBED_DENSITY_EXTRA_CAPTION[density]
+                else:
+                    captions = base_captions + BREAST_BASE_CAPTION + BREAST_DENSITY_CAPTION + str(density) + ": " + density_desc + "."
+                # Update caption type if using raw style caption
+                if self.raw_caption:
+                    captions = captions.replace('.', ' ' + self.tokenizer.sep_token)
+                    captions = captions.replace(';', ' ' + self.tokenizer.sep_token)
+                    if self.llm_type != 'bert':
+                        captions = self.tokenizer.bos_token + ' ' + captions + ' ' + self.tokenizer.eos_token
+                else:
+                    captions = captions.replace("\n", " ").lower()
+                cap, cap_len = self.get_caption([captions])
+                zero_shot_caps.append(cap)
+                zero_shot_caps_len.append(cap_len)
+        else:
+            for asses, birads_desc in EMBED_BIRADS_DESC.items():
+                # VinDr only consider BIRADS 1 ~ 5
+                if asses in ['A', 'K']:
+                    continue
+                birads = EMBED_LETTER_TO_BIRADS[asses]
+                # build density caption following training format
+                if self.structural_cap:
+                    # findings
+                    mass_info = EMBED_MASS_CAPTION[asses]
+                    captions = base_captions + EMBED_FINDINGS + EMBED_FINDS_CAPTION + mass_info + " "
+                    # impression
+                    impression_desc = EMBED_BIRADS_DESC[asses]
+                    captions += EMBED_IMPRESSIONS + EMBED_IMPRESSION_CAPTION.replace("{{BIRADS}}", str(birads)).replace("{{BIRADS_DESC}}", impression_desc)
+                    # overall assesment
+                    captions += EMBED_ASSESSMENT + EMBED_ASSESSMENT_CAPTION[asses]
+                elif self.natural_cap:
+                    # findings
+                    mass_info = EMBED_MASS_CAPTION[asses]
+                    captions = base_captions + EMBED_FINDS_CAPTION + mass_info + " "
+                    # impression
+                    impression_desc = EMBED_BIRADS_DESC[asses]
+                    captions += EMBED_IMPRESSIONS + EMBED_IMPRESSION_CAPTION.replace("{{BIRADS}}", str(birads)).replace("{{BIRADS_DESC}}", impression_desc)
+                else:
+                    captions = base_captions + BREAST_BASE_CAPTION + BREAST_BIRADS_CAPTION + str(birads) + ": " + birads_desc + "."
+                # Update caption type if using raw style caption
+                if self.raw_caption:
+                    captions = captions.replace('.', ' ' + self.tokenizer.sep_token)
+                    captions = captions.replace(';', ' ' + self.tokenizer.sep_token)
+                    if self.llm_type != 'bert':
+                        captions = self.tokenizer.bos_token + ' ' + captions + ' ' + self.tokenizer.eos_token
+                else:
+                    captions = captions.replace("\n", " ").lower()
+                cap, cap_len = self.get_caption([captions])
+                zero_shot_caps.append(cap)
+                zero_shot_caps_len.append(cap_len)
+
+        stacked_caps = {}
+        for cap in zero_shot_caps:
+            for k, v in cap.items():
+                if k not in stacked_caps:
+                    stacked_caps[k] = v
+                else:
+                    stacked_caps[k] = torch.concat([stacked_caps[k], v], dim=0)
+        zero_shot_caps_len = torch.tensor(zero_shot_caps_len)
+        self.zero_shot_caps = stacked_caps
+        self.zero_shot_caps_len = zero_shot_caps_len
+
+
+    def __getitem__(self, idx):
+        entry = self.df.iloc[idx]
+        sid = entry['study_id']
+        imid = entry['image_id']
+        view = entry['laterality'] + entry['view_position']
+        label = self.labels[idx]
+        density = self.densities[idx]
+        birads = self.birads[idx]
+        dicom_path = os.path.join(self.data_path, f'{sid}/{imid}.dicom')
+        
+        img_path = dicom_path.replace('vindr-1.0.0', 'vindr-1.0.0-resized-1024')
+        img_path = img_path.replace('.dicom', '_resized.png')
+        assert os.path.exists(img_path)
+        img = get_imgs(img_path, scale=self.imsize, transform=self.transform)
+        one_hot_labels = torch.zeros(self.n_classes)
+        one_hot_labels[label] = 1
+        # if self.zero_shot_caps is None:
+            # self.get_zeroshot_caption()
+        density_one_hot = torch.zeros(4)
+        density_one_hot[density] = 1
+        birads_one_hot = torch.zeros(5)
+        birads_one_hot[birads] = 1
+
+        return {
+            "images": img,
+            "density": density_one_hot,
+            "birads": birads_one_hot,
+            "paths": img_path,
         }
