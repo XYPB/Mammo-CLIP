@@ -39,11 +39,6 @@ base:
         - "heterogeneously dense"
         - "extremely dense"
 
-    rsna:
-      malignancy:
-          - "no malignancy"
-          - "malignancy"
-
 hydra:
   run:
     dir: ????
